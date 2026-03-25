@@ -1,13 +1,49 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components"
+import SearchResult from "./components/SearchResult/SearchResult";
 
 
-const BASE_URL = 'http://localhost:9000/';
+export const BASE_URL = 'http://localhost:9000';
+
 const App = () => {
 const [data, setData]=useState(null);
+const[loading, setLoading]=useState(false)
+const[error, setError]=useState(null)
 
 
+useEffect(()=>{
+const fetchFoodData=async()=>{
+  setLoading(true)
+ try{
+   const response = await fetch(BASE_URL);
+  const json=await response.json()
+  console.log(json)
+  setData(json)
+  setLoading(false)
+ }
+ catch(error) {
+  setError("unable to fetch data")
+ }
+ finally {
+      setLoading(false) // best practice
+    }
+};
+fetchFoodData()
+},[]);
+
+console.log(data);
+
+// const temp={ 
+//   image: "/images/egg.png",
+// name: "Boilded Egg",
+// price: 10,
+// text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum.",
+// type: "breakfast",
+// };
+
+if(error) return <div>{error}</div>
+if(loading) return <div>Loading...</div>
   return (
     <Conatiner>
       <TopConatiner>
@@ -26,11 +62,7 @@ const [data, setData]=useState(null);
         <Button>Dinner</Button>
       </FilterContainer>
 
-      <FoodCardConatiner>
-        <FoodCards>
-
-        </FoodCards>
-      </FoodCardConatiner>
+      <SearchResult data={data}/>
     </Conatiner>
   );
 };
@@ -66,7 +98,7 @@ gap:25px;
 padding-bottom:40px;
 `;
 
-const Button = styled.button`
+export const Button = styled.button`
   background: #ff4343;
   border-radius: 5px;
   padding: 6px 12px 6px 12px;
@@ -75,14 +107,3 @@ const Button = styled.button`
 
 `;
 
-const FoodCardConatiner = styled.section`
-    background-image: url("/bg.png");
-      background-size: cover;
-    height: calc(100vh - 210px);
-`;
-
-const FoodCards = styled.div`
-background:transparent;
-width:25%;
-height: 50px;
-`;
