@@ -8,8 +8,10 @@ export const BASE_URL = 'http://localhost:9000';
 
 const App = () => {
 const [data, setData]=useState(null);
-const[loading, setLoading]=useState(false)
-const[error, setError]=useState(null)
+const [filteredData, setFilteredData]= useState(null);
+const[loading, setLoading]=useState(false);
+const[error, setError]=useState(null);
+const [selectedButton, setSelectedButton]= useState("all");
 
 
 useEffect(()=>{
@@ -20,6 +22,7 @@ const fetchFoodData=async()=>{
   const json=await response.json()
   console.log(json)
   setData(json)
+  setFilteredData(json)
   setLoading(false)
  }
  catch(error) {
@@ -32,43 +35,87 @@ const fetchFoodData=async()=>{
 fetchFoodData()
 },[]);
 
-console.log(data);
 
-// const temp={ 
-//   image: "/images/egg.png",
-// name: "Boilded Egg",
-// price: 10,
-// text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum.",
-// type: "breakfast",
-// };
+
+// Filter data start from search
+const searchFood=(e)=>{
+  const searchValue=e.target.value;
+  console.log(searchValue);
+  if(searchValue == ""){
+    setFilteredData(null)
+  }
+  const filter = data?.filter((food)=>
+    food.name.toLowerCase().includes(searchValue.toLowerCase()));
+  setFilteredData(filter)
+};
+// Filter data end from search
+// Filter by BUtton start
+const filterFood=(type)=>{
+if(type == "all"){
+  setFilteredData(data);
+  setSelectedButton("all");
+  return;
+}
+const filter = data?.filter((food)=>
+    food.type.toLowerCase().includes(type.toLowerCase()));
+setFilteredData(filter)
+setSelectedButton(type)
+}
+//  Filter by BUtton end
+
+const filterBtns=[
+  {
+    name:"all",
+    type:"all"
+  },
+  {
+    name:"Breakfast",
+    type:"breakfast"
+  },
+  {
+    name:"Lunch",
+    type:"lunch"
+  },
+  {
+    name:"Dinner",
+    type:"dinner"
+  }
+]
 
 if(error) return <div>{error}</div>
 if(loading) return <div>Loading...</div>
   return (
+   <>
     <Conatiner>
       <TopConatiner>
         <div className="logo">
           <img src="/logo.svg" alt="logo" />
         </div>
         <div className="search">
-          <input type="text" placeholder="Search Food.." />
+          <input type="text" onChange={searchFood} placeholder="Search Food.." />
         </div>
 
       </TopConatiner>
+
+      {/* button show using map */}
       <FilterContainer>
-        <Button>All</Button>
-        <Button>Breakfast</Button>
-        <Button>Lunch</Button>
-        <Button>Dinner</Button>
+        {
+          filterBtns.map((value)=>(
+        <Button key={value.name} onClick={() => filterFood(value.type)}>
+          {value.name}</Button>
+          ))
+        }               
       </FilterContainer>
 
-      <SearchResult data={data}/>
     </Conatiner>
+      <SearchResult data={filteredData}/>
+      </>
+
   );
 };
 
 export default App;
-const Conatiner = styled.div`
+export const Conatiner = styled.div`
 max-width:1200px;
 margin:0 auto;
 `;
@@ -104,6 +151,9 @@ export const Button = styled.button`
   padding: 6px 12px 6px 12px;
   border:none;
   color:#fff;
-
+  cursor: pointer;
+&:hover{
+ background: #ff0b0b;
+}
 `;
 
